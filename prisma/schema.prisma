@@ -1,0 +1,32 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Session {
+  id        String   @id
+  createdAt DateTime @default(now())
+  messages  Message[]
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  sessionId  String
+  role       String
+  content    String
+  timestamp  DateTime @default(now())
+  Session    Session  @relation(fields: [sessionId], references: [id])
+}
+
+model Quote {
+  id       Int    @id @default(autoincrement())
+  category String
+  text     String
+  author   String
+}
