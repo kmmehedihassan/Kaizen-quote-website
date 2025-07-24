@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "target": "esnext",
     "lib": [
       "dom",
       "dom.iterable",
@@ -7,15 +8,36 @@
     ],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
-    "incremental": true,
-    "module": "esnext",
     "esModuleInterop": true,
+    "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "incremental": true,
+    // React JSX support
     "jsx": "preserve",
+    // Path aliases
+    "baseUrl": ".",
+    "paths": {
+      "@/components/*": [
+        "src/components/*"
+      ],
+      "@/lib/*": [
+        "src/lib/*"
+      ],
+      "@/tools/*": [
+        "src/tools/*"
+      ]
+    },
+    // Ensure React types are loaded
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "types": ["node", "react", "react-dom"],
+    // Next.js plugin
     "plugins": [
       {
         "name": "next"
@@ -24,9 +46,9 @@
   },
   "include": [
     "next-env.d.ts",
-    ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"
