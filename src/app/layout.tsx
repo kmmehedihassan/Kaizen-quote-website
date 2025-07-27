@@ -1,11 +1,10 @@
 // src/app/layout.tsx
-
-import { ChatDrawer } from "@/components/ChatDrawer";
 import "./globals.css";
+import { ChatDrawer } from "@/components/ChatDrawer";
 
 export const metadata = {
   title: "Kaizen Quotes",
-  description: "AI-powered quote site",
+  description: "An AI-powered quote site",
 };
 
 export default function RootLayout({
@@ -15,12 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}
-        {/* Chat widget available on all pages */}
-       <div id="chat-drawer">
-         {/* @ts-ignore */}
-         <ChatDrawer />
-       </div>
+      <body className="min-h-screen bg-gray-50">
+        {children}
+        <ChatDrawer />
       </body>
     </html>
   );

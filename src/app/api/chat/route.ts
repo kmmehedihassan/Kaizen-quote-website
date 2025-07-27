@@ -1,12 +1,10 @@
-// src/app/api/chat/route.ts
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { detectIntent } from "@/tools/detectIntent";
-import { exec as navExec } from "@/tools/navigate";
 import { db } from "@/lib/prisma";
+import { exec as navExec } from "@/tools/navigate";
+import { detectIntent } from "@/tools/detectIntent";
+
+const GREET_RE = /\b(hi|hello|hey|good (morning|afternoon|evening))\b/i;
 
 export async function POST(request: NextRequest) {
   const { sessionId, message } = (await request.json()) as {
@@ -14,28 +12,36 @@ export async function POST(request: NextRequest) {
     message: string;
   };
 
-  // 1) Ensure session & persist user message
+  // 1) Persist user & ensure session exists
   await db.session.upsert({
     where: { id: sessionId },
-    update: {},
     create: { id: sessionId },
+    update: {},
   });
   await db.message.create({
     data: { sessionId, role: "user", content: message },
   });
 
-  // 2) Detect mood locally
-  const { mood } = detectIntent(message);
+  // 2) Debug log
+  const historyCount = await db.message.count({ where: { sessionId } });
+  console.log("🕵️ greeting debug:", { sessionId, historyCount, message });
 
-  // 3) Build reply & compute route
-  const assistantMsg = `Got it—here are some ${mood} quotes.`;
+  // 3) If very first message is a greeting, send back only a greeting
+  if (historyCount === 1 && GREET_RE.test(message)) {
+    const assistantMsg = "👋 Hi there! I’m KaizenAI. How are you feeling today?";
+    await db.message.create({
+      data: { sessionId, role: "assistant", content: assistantMsg },
+    });
+    return NextResponse.json({ assistantMsg, route: null });
+  }
+
+  // 4) Otherwise detect mood and redirect
+  const { mood } = detectIntent(message);
+  const assistantMsg = `Here are some ${mood} quotes.`;
   const route = navExec({ mood }).route;
 
-  // 4) Persist assistant message
   await db.message.create({
     data: { sessionId, role: "assistant", content: assistantMsg },
   });
-
-  // 5) Return JSON
   return NextResponse.json({ assistantMsg, route });
 }

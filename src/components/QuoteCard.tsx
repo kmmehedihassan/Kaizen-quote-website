@@ -2,6 +2,7 @@
 import React from "react";
 
 export interface QuoteCardProps {
+  id: number;
   text: string;
   author: string;
   category: string;
