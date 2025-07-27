@@ -1,6 +1,7 @@
 {
   "name": "kaizen-quote-website",
   "version": "0.1.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -20,11 +21,13 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11",
     "@types/node": "^20.19.9",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.0.0",
+    "node-loader": "^2.1.0",
     "postcss": "^8.0.0",
     "prisma": "^4.0.0",
     "tailwindcss": "^4.1.11",
