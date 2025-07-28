@@ -1,10 +1,13 @@
+// src/app/api/chat/route.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/prisma";
 import { exec as navExec } from "@/tools/navigate";
 import { detectIntent } from "@/tools/detectIntent";
 
-const GREET_RE = /\b(hi|hello|hey|good (morning|afternoon|evening))\b/i;
+// only match if the entire message is exactly one of these greetings:
+const PURE_GREET_RE =
+  /^\s*(?:hi|hello|hey|good (?:morning|afternoon|evening))\s*$/i;
 
 export async function POST(request: NextRequest) {
   const { sessionId, message } = (await request.json()) as {
@@ -12,7 +15,7 @@ export async function POST(request: NextRequest) {
     message: string;
   };
 
-  // 1) Persist user & ensure session exists
+  // 1) Upsert session & save user message
   await db.session.upsert({
     where: { id: sessionId },
     create: { id: sessionId },
@@ -22,20 +25,17 @@ export async function POST(request: NextRequest) {
     data: { sessionId, role: "user", content: message },
   });
 
-  // 2) Debug log
-  const historyCount = await db.message.count({ where: { sessionId } });
-  console.log("🕵️ greeting debug:", { sessionId, historyCount, message });
-
-  // 3) If very first message is a greeting, send back only a greeting
-  if (historyCount === 1 && GREET_RE.test(message)) {
-    const assistantMsg = "👋 Hi there! I’m KaizenAI. How are you feeling today?";
+  // 2) If the user just greeted us, reply and do NOT navigate
+  if (PURE_GREET_RE.test(message)) {
+    const assistantMsg =
+      "👋 Hi there! I’m KaizenAI. How are you feeling today? Reply ONE word: motivational, romantic, or funny.";
     await db.message.create({
       data: { sessionId, role: "assistant", content: assistantMsg },
     });
     return NextResponse.json({ assistantMsg, route: null });
   }
 
-  // 4) Otherwise detect mood and redirect
+  // 3) Otherwise, detect mood and route as before
   const { mood } = detectIntent(message);
   const assistantMsg = `Here are some ${mood} quotes.`;
   const route = navExec({ mood }).route;
