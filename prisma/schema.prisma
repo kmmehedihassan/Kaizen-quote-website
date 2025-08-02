@@ -2,7 +2,7 @@
 
 //tells Prisma which database to talk to
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
