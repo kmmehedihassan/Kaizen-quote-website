@@ -1,21 +1,24 @@
 // prisma/schema.prisma
 
+//tells Prisma which database to talk to
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-
+//sets up the Prisma Client code generator.
 generator client {
   provider = "prisma-client-js"
 }
 
+// A chat session, keyed by a UUID
 model Session {
   id        String   @id
   createdAt DateTime @default(now())
   messages  Message[]
 }
 
+// Each chat message in a session 
 model Message {
   id         Int      @id @default(autoincrement())
   sessionId  String
@@ -25,6 +28,7 @@ model Message {
   Session    Session  @relation(fields: [sessionId], references: [id])
 }
 
+// A static quote in a given category 
 model Quote {
   id       Int    @id @default(autoincrement())
   category String

@@ -1,4 +1,5 @@
 // src/app/funny/page.tsx
+export const revalidate = 60; // Revalidate every 60 seconds
 import { QuoteCard } from "@/components/QuoteCard";
 
 type Quote = {

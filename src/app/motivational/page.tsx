@@ -1,4 +1,6 @@
 // src/app/motivational/page.tsx
+export const revalidate = 60; // rebuild this page at most once every 60 seconds
+
 import { QuoteCard } from "@/components/QuoteCard";
 
 async function getQuotes() {

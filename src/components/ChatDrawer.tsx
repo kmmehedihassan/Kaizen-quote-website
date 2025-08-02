@@ -17,6 +17,9 @@ export function ChatDrawer() {
   const [input, setInput] = useState("");
   const sessionId = useRef<string>("");
 
+  // Ref to the end-of-list sentinel
+  const bottomRef = useRef<HTMLDivElement>(null);
+
   // Load or create session ID and fetch history
   useEffect(() => {
     let id = localStorage.getItem("sessionId");
@@ -34,15 +37,20 @@ export function ChatDrawer() {
       .catch(console.error);
   }, []);
 
+  // Whenever msgs change *or* the drawer opens, scroll to bottom
+  useEffect(() => {
+    if (open) {
+      bottomRef.current?.scrollIntoView({ behavior: "auto" });
+    }
+  }, [msgs, open]);
+
   const send = async () => {
     if (!input.trim()) return;
 
-    // 1) add user message
     const userMsg: Msg = { role: "user", content: input };
     setMsgs((prev) => [...prev, userMsg]);
     setInput("");
 
-    // 2) call chat API
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -51,17 +59,14 @@ export function ChatDrawer() {
         message: userMsg.content,
       }),
     });
+    const data = (await res.json()) as { assistantMsg: string; route?: string };
 
-    const data = await res.json() as { assistantMsg: string; route?: string };
-
-    // 3) add assistant message
     const assistantMsg: Msg = {
       role: "assistant",
-      content: String(data.assistantMsg),
+      content: data.assistantMsg,
     };
     setMsgs((prev) => [...prev, assistantMsg]);
 
-    // 4) navigate if needed
     if (data.route) {
       router.push(data.route);
     }
@@ -92,6 +97,8 @@ export function ChatDrawer() {
                 {m.content}
               </div>
             ))}
+            {/* Sentinel div to scroll into view */}
+            <div ref={bottomRef} />
           </div>
 
           {/* Input box */}

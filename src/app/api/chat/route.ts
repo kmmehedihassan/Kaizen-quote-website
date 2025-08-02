@@ -16,18 +16,21 @@ function detectExplicitMood(text: string): "motivational" | "romantic" | "funny"
   return null;
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest) { // Handle incoming chat messages
+  // 0) Validate request body
   const { sessionId, message } = (await request.json()) as {
     sessionId: string;
     message: string;
   };
 
   // 1) Upsert session and save the incoming user message
+  // Ensure session exists in the database
   await db.session.upsert({
     where: { id: sessionId },
     update: {},
     create: { id: sessionId },
   });
+  // Save the user’s message in the Message table
   await db.message.create({
     data: { sessionId, role: "user", content: message },
   });
@@ -57,10 +60,14 @@ export async function POST(request: NextRequest) {
   }
 
   // 5) Otherwise, do a “normal” chat with Ollama
+  // Load all past chat messages for this session
+  // and send them to the LLM along with the new user message
   const history = await db.message.findMany({
     where: { sessionId },
     orderBy: { timestamp: "asc" },
   });
+  // If we have no history, just use the user message
+  // Gives the model its “persona” and hard rules.// If we have history, include it
   const llmMessages = [
     {
       role: "system",
@@ -76,17 +83,19 @@ export async function POST(request: NextRequest) {
 
   let assistantMsg = "Sorry, something went wrong.";
   try {
-    const res = await fetch(`${process.env.OLLAMA_HOST}/v1/chat/completions`, {
+    // Call the Ollama API to get a response
+    //“chat completion” API, which expects a conversation payload and returns a generated reply.
+    const res = await fetch(`${process.env.OLLAMA_HOST}/v1/chat/completions`, { //Comes from your .env.local http://127.0.0.1:11434.
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "llama2:latest",
         messages: llmMessages,
-        temperature: 0.7,
-        max_tokens: 128,
+        temperature: 0.7, // Allow some creativity(randomness)
+        max_tokens: 128, // Limit response length
       }),
     });
-    const j = await res.json();
+    const j = await res.json(); // Parse the response from Ollama
     assistantMsg = j.choices?.[0]?.message?.content.trim() ?? assistantMsg;
   } catch (e) {
     console.error("Ollama error:", e);
@@ -94,7 +103,7 @@ export async function POST(request: NextRequest) {
 
   // 6) Persist & return—no routing on pure chat turns
   await db.message.create({
-    data: { sessionId, role: "assistant", content: assistantMsg },
+    data: { sessionId, role: "assistant", content: assistantMsg },// Save the assistant's response
   });
-  return NextResponse.json({ assistantMsg, route: null });
+  return NextResponse.json({ assistantMsg, route: null });// Return the response to the client
 }
