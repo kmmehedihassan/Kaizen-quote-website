@@ -17,6 +17,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "incremental": true,
+  
     // React JSX support
     "jsx": "preserve",
     // Path aliases

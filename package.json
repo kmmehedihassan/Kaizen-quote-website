@@ -5,13 +5,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-     "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "node --loader ts-node/esm prisma/seed.ts",
+    "postinstall": "prisma migrate deploy"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "npm run seed"
   },
   "dependencies": {
     "@prisma/client": "^4.0.0",
@@ -33,6 +35,6 @@
     "prisma": "^4.0.0",
     "tailwindcss": "^4.1.11",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.2"
   }
 }
