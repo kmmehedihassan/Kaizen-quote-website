@@ -1,6 +1,6 @@
 // src/app/layout.tsx
 import "./globals.css";
-import { Navbar } from "@/components/NavBar";
+import Navbar from "@/components/Navbar";
 import { ChatDrawer } from "@/components/ChatDrawer";
 
 export const metadata = {
