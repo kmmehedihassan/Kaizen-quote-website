@@ -178,7 +178,3 @@ prisma/
   Run `npx prisma generate` and restart the dev server (and sometimes your editor’s TS server).
 
 ---
-
-## License
-
-MIT (or update to your preferred license).
